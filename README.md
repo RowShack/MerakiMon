@@ -21,6 +21,12 @@ same signed updates.
   clients and the failed connection attempts by step (association, authentication, DHCP, DNS).
 - **Capacity forecasts** for switch ports, WAN traffic and clients. A forecast under 30 days (7 critical) is an issue.
 - **Firmware and lifecycle** (end-of-life dates), **Changes** from Meraki's configuration change feed, and **Reports**.
+- **Security advisories.** The CVEs the NVD lists for the MX and Z models you run are matched against your firmware version
+  on your own server and shown with their score and fixed version. Newer CVEs that have no version data are listed to check
+  by hand. Secondary to monitoring: see the [FAQ](docs/faq.md) for what it can and can't tell you.
+- **Experience probes.** A server inside a monitored network can test the gateway, DNS, the internet and web sites like a
+  user's PC, and say where a problem is.
+- **API tester.** `merakimon test-api` checks every call MerakiMon makes to Meraki and what each one feeds.
 - **Reports, alerts and a wallboard**, users with roles, two-step sign-in, backup and restore, signed in-app updates.
 - **Demo mode** with simulated organisations, so you can look around without a Meraki account.
 - **SiteMon.** MerakiMon serves a summary card that [SiteMon](https://github.com/RowShack/SiteMon) can show on one wallboard
@@ -28,7 +34,8 @@ same signed updates.
 
 **Built from the Meraki documentation, not yet checked on real gear:** the **VPN & HA** tab (site-to-site VPN and the warm
 spare pair), the **Network Map** and **Find Device**. The organisation MerakiMon was checked on has no VPN, no HA pair and an
-empty link-layer topology, so these tabs have only been exercised against a simulated Meraki. Treat them as new.
+empty link-layer topology, so these tabs have only been exercised against a simulated Meraki. Treat them as new. The same
+goes for what 0.3.0 added: the DHCP pool, cellular backup and port speed checks, and the API tester's field list.
 
 ![Switches with their port grids](docs/screenshots/switches.png)
 

@@ -8,12 +8,54 @@ Everything is set in the web interface under **Settings** (admins only), and app
 | Section | What admins manage |
 |---|---|
 | **Organisations** | Add, edit, test, pause or delete organisations: the API key (stored encrypted, never shown again), which networks are monitored, and the Meraki host (global, or a regional host). |
-| **Monitoring** | The poll interval (60 seconds by default; a poll costs about six API calls per organisation however many devices it has), how long history is kept, and the saved weekly and monthly reports. |
+| **Monitoring** | The poll interval (60 seconds by default; a poll costs about six API calls per organisation however many devices it has), how long history is kept, the saved weekly and monthly reports, the experience probes and whether security advisories are fetched. |
 
 History is kept at three resolutions: every sample for a number of hours (default 6), 1-minute averages for a number of days
 (3) and 15-minute averages (90), which reports and long charts use. A device's detail panel has history charts for the chosen
 History range: online over time for every device; clients and channel use for an access point; uplink latency, loss and usage
 for an MX; ports with a link and, where Meraki reports it, traffic for a switch.
+
+## Experience probes
+
+Off by default, because MerakiMon reads Meraki's cloud and its server can be anywhere. If the server sits inside one of the
+monitored networks, turn the probes on under **Settings > Monitoring**, choose that network and enter its gateway address
+(the appliance's LAN address in the server's VLAN; leave it empty to skip the gateway check). Every 30 seconds the server
+then pings the gateway, asks two DNS servers, reaches the internet by address and opens two web sites. The results are on
+that network's Overview, and the **Experience** area raises an issue that says where the problem is: near the server, between
+the LAN and the internet, DNS, or one web site. They are checked even while Meraki's cloud can't be read.
+
+## Security advisories
+
+On each network's **Firmware & lifecycle** tab. Once a day MerakiMon asks the NVD (the US National Vulnerability Database)
+for the CVEs of each MX and Z model in use, and matches their version ranges against the appliance firmware on your server.
+
+- **What is sent:** the NVD's name of a model (for example the MX67's firmware) and the word "meraki". Never a firmware
+  version, serial number, device, network or organisation name.
+- **What you see:** CVE id, CVSS score, description, the devices, the fixed version. A network affected by one gets an issue
+  (a warning from CVSS 7.0). An admin can **Dismiss** a CVE for one network or for all, with a note.
+- **To check by hand:** the NVD has no version data for Meraki CVEs published from 2025 on, so those can't be matched. They
+  are listed separately with a link (the NVD page links Cisco's advisory), and raise one note per network until dismissed.
+- **Not covered:** access points, switches, cameras, sensors and cellular gateways. The NVD lists Meraki firmware for MX and
+  Z appliances only.
+- **Settings > Monitoring** turns the fetch off or sends it through a proxy. The demo uses made-up samples and never fetches.
+
+This product uses data from the NVD API but is not endorsed or certified by the NVD.
+
+## API tester
+
+`merakimon test-api` (on Windows `MerakiMon.exe test-api`, as an administrator) makes every read call MerakiMon makes, once,
+for each saved organisation, and prints for each whether it answered, whether the fields MerakiMon reads are there, and what
+stays empty when they aren't. **Settings > Organisations > Full API test** shows the same list.
+
+| Option | What it does |
+|---|---|
+| `--org NAME` | only that organisation (its name or Meraki id) |
+| `--demo` | test against the built-in simulator, with no network |
+| `--dump DIR` | also save every raw answer under `DIR`, with serial numbers, addresses and names replaced |
+| `--no-redact` | with `--dump`: keep the real values (don't share that folder) |
+| `--data-dir DIR` | use that data folder |
+
+The API key is never printed and never saved in a dump.
 
 ## Issues & events
 
@@ -31,6 +73,11 @@ networks):
 - **Failed Wi-Fi connections:** many different devices failing on one SSID or access point in the last hour.
 - **Capacity:** switch ports forecast to reach 90% of a network's ports within 30 days (warning) or 7 (critical).
 - **Port flapping:** at least 6 up/down changes within 60 minutes.
+- **Port speed:** an uplink or a critical port linked below 1 Gbps, and any port at half duplex.
+- **Wi-Fi interference:** non-Wi-Fi use of a radio's channel at or above 30% for several polls.
+- **DHCP pool:** a pool of the appliance at or above 90% full (warning) or 98% (critical); pools under 8 addresses are skipped.
+- **Cellular backup:** the appliance's cellular uplink is the active one.
+- **Experience probes:** 5% or more of the server's own pings lost.
 - **Warm spare (HA)** and **VPN peer unreachable** checks (see the note in the [README](../README.md) about these tabs).
 
 ## What is read, and how often
@@ -44,6 +91,8 @@ networks):
 | Switch stacks, warm spare detail | 30 minutes |
 | Link-layer topology (Network Map) | 15 minutes |
 | Per-switch port statistics (traffic, PoE, neighbour) | a few switches per poll, each again after 10 minutes |
+| DHCP pools of each appliance | up to three appliances per poll, each again after 10 minutes |
+| CVE list (from the NVD, not from Meraki) | once a day, one request per MX or Z model in use and one more |
 
 ## Settings shared by every MonStack app
 

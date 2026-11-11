@@ -22,6 +22,22 @@ over minutes, a few at a time.
 The first release was checked against a real organisation, and every tab is tested against a simulated Meraki. **VPN & HA,
 Network Map and Find Device are not verified on real gear yet.** The organisation used for checking has no site-to-site VPN, no
 warm spare pair and an empty link-layer topology, so those were built from Cisco's documentation. Please report what you see.
+The checks added in 0.3.0 for DHCP pools, cellular backup and port speed, and the API tester, are also built from the
+documentation; run `merakimon test-api` and tell us if a line that should pass doesn't.
+
+## What do the security advisories tell me, and what don't they?
+
+They tell you which published CVEs affect the firmware version your MX and Z appliances run, as far as the NVD has version
+data: that covers Meraki CVEs up to 2024. Newer ones are listed "to check by hand" because the NVD has not added version
+ranges to them, and Cisco's own feeds either need a Cisco account per customer or give the versions as text only. They don't
+cover access points, switches, cameras or sensors, and they are no substitute for Cisco's security advisories page. Meraki
+firmware is updated from the cloud, so the usual fix is to schedule the upgrade the dashboard offers.
+
+## Some checks are missing compared with FortiMon
+
+Meraki's API doesn't give everything a FortiGate does. There are no fibre light levels, no CPU or memory, no PoE budget or
+switch temperature, and no loop or MAC-flapping detection: when Meraki notices those itself it raises a dashboard alert,
+which MerakiMon passes on. Time-of-day baselines, rogue access points and per-client Wi-Fi signal checks are not built yet.
 
 ## The VPN tab is empty
 
